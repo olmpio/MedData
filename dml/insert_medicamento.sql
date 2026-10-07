@@ -6,7 +6,4 @@ INSERT INTO medicamento (nome, principio_ativo, fabricante) VALUES
 ('Losartana', 'Losartana Potassica', 'EMS'),
 ('Metformina', 'Cloridrato de Metformina', 'Medquimica'),
 ('Dipirona', 'Dipirona Sodica', 'Hipolabor'),
-('Loratadina', 'Loratadina', 'Cimed');INSERT INTO medicamento (nome, principio_ativo, fabricante) VALUES
-('Paracetamol', 'Paracetamol', 'Medley'),
-('Amoxicilina', 'Amoxicilina Tri-hidratada', 'Eurofarma'),
-('Atenolol', 'Atenolol', 'EMS');
+('Loratadina', 'Loratadina', 'Cimed');

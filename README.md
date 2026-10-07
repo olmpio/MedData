@@ -1,6 +1,6 @@
 🩺 Sistema de Gestão de Clínica Médica - MedData
 
-Status: 🚀 Em Desenvolvimento (Etapa DDL & DML Concluída)
+Status: 🚀 Em Desenvolvimento (Etapas DDL, DML e DQL Concluídas)
 
 ❇️ Projeto acadêmico de Banco de Dados SQL para gerenciamento de uma clínica médica.
 
@@ -31,6 +31,7 @@ Chaves primárias (PK), Chaves estrangeiras (FK), Relacionamentos, Normalizaçã
 
 - `/ddl`: Scripts de criação das tabelas e relacionamentos (`CREATE TABLE`).
 - `/dml`: Scripts de povoamento e carga de dados (`INSERT`).
+- `/dql`: Consultas relacionais (`SELECT` com `INNER`, `LEFT`, `RIGHT JOIN` e `GROUP BY`), um arquivo por consulta.
 - `script_banco.sql`: Script unificado completo (`DROP` → `CREATE` → `INSERT`) para execução sequencial.
 
 ---
@@ -164,3 +165,50 @@ A escolha desse domínio possibilita trabalhar diferentes tipos de relacionament
 * **Consulta** `1 ─── 0..1` **Pagamento**
 
 > **Nota:** Todos os relacionamentos e restrições de integridade referencial (*Foreign Keys*) foram devidamente implementados via DDL com tratamento de ações de deleção (`ON DELETE RESTRICT`, `ON DELETE CASCADE` e `ON DELETE SET NULL`).
+
+---
+
+## 4. Consultas Relacionais (DQL)
+
+As consultas ficam em `/dql`, numeradas na ordem da atividade. Cada arquivo traz um cabeçalho com o objetivo, o critério adotado e os tipos de JOIN utilizados.
+
+| # | Arquivo | Consulta | Recursos |
+|---|---------|----------|----------|
+| 01 | `01_faturamento_convenio_especialidade.sql` | Faturamento bruto por convênio e especialidade | INNER, LEFT, GROUP BY |
+| 02 | `02_exames_mais_solicitados.sql` | Exames mais solicitados no período | INNER, GROUP BY |
+| 03 | `03_pacientes_inativos.sql` | Pacientes sem consultas nos últimos 6 meses | LEFT (anti-join) |
+| 04 | `04_cancelamentos_por_medico.sql` | Consultas canceladas por médico | LEFT, GROUP BY |
+| 05 | `05_medicamentos_por_especialidade.sql` | Prescrições de cada medicamento por especialidade | INNER, GROUP BY |
+| 06 | `06_glosas_estimadas.sql` | Consultas realizadas com pagamento pendente, por convênio | INNER, LEFT, GROUP BY |
+| 07 | `07_valor_medio_exames_por_paciente.sql` | Valor médio dos exames realizados por paciente | INNER, GROUP BY, AVG |
+| 08 | `08_medicos_sem_consultas_proxima_semana.sql` | Médicos sem consultas agendadas na próxima semana | LEFT (anti-join) |
+| 09 | `09_pacientes_por_faixa_etaria.sql` | Quantidade de pacientes por faixa etária | CASE, GROUP BY |
+| 10 | `10_receitas_sem_medicamentos.sql` | Receitas sem medicamento associado | RIGHT (anti-join) |
+| 11 | `11_atendimentos_por_medico_mes_atual.sql` | Atendimentos realizados por médico no mês atual | LEFT, GROUP BY |
+| 12 | `12_pacientes_plano_ouro.sql` | Pacientes do convênio Plano Ouro | INNER |
+| 13 | `13_faturamento_por_especialidade_ultimo_ano.sql` | Faturamento por especialidade nos últimos 12 meses | INNER, RIGHT, GROUP BY |
+| 14 | `14_exames_sem_resultado.sql` | Exames realizados sem resultado registrado | INNER |
+| 15 | `15_medicos_multiplas_especialidades.sql` | Médicos com mais de uma especialidade | INNER, GROUP BY, HAVING |
+| 16 | `16_tempo_medio_consulta_exame.sql` | Tempo médio (dias) entre consulta e exame | INNER, AVG |
+| 17 | `17_top3_convenios_receita.sql` | Três convênios com maior receita | INNER, GROUP BY, LIMIT |
+| 18 | `18_pacientes_doencas_cronicas.sql` | Pacientes com diagnóstico de condição crônica | INNER, ILIKE ANY |
+| 19 | `19_pagamentos_cartao_credito.sql` | Total pago com cartão de crédito | GROUP BY, SUM |
+| 20 | `20_relatorio_consolidado.sql` | Paciente, médico, data, valor e status do pagamento | INNER, LEFT |
+
+### Critérios adotados
+
+- **Faturamento bruto** considera todos os pagamentos lançados (pagos e pendentes); **receita** considera apenas os pagamentos com status `Pago`.
+- **Exame realizado** é aquele com `data_exame` preenchida e não futura.
+- **Atendimento** é uma consulta com status `Realizada`.
+- Pacientes sem convênio aparecem como `Particular` nas consultas agrupadas por convênio.
+- As datas são relativas a `CURRENT_DATE`, acompanhando a carga de dados do `script_banco.sql`.
+
+### Como executar
+
+1. Execute `script_banco.sql` em um banco PostgreSQL para criar e popular as tabelas.
+2. Abra qualquer arquivo de `/dql` no DBeaver (ou `psql`) e execute.
+
+> **Observação:** com a carga de exemplo atual, as consultas 03, 10, 12, 14, 15 e 18 retornam zero linhas porque os dados não possuem casos que atendam aos critérios (ex.: não existe o convênio *Plano Ouro* nem diagnósticos de doenças crônicas). Todas foram validadas com registros de teste.
+
+> **Limitação do modelo:** a tabela `medico` possui uma única especialidade (`id_especialidade`). Por isso, a consulta 15 identifica o mesmo profissional cadastrado em mais de uma especialidade. Uma evolução recomendada é criar a associativa `medico_especialidade` (N:N).
+
