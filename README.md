@@ -1,38 +1,68 @@
-🩺 Sistema de Gestão de Clínica Médica - MedData
+# 🩺 MedData — Sistema de Gestão de Clínica Médica
 
-Status: 🚀 Em Desenvolvimento (Etapas DDL, DML e DQL Concluídas)
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-blueviolet?style=for-the-badge" alt="Status: Em Desenvolvimento">
+  <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/SQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="SQL">
+</p>
 
-❇️ Projeto acadêmico de Banco de Dados SQL para gerenciamento de uma clínica médica.
+## 📋 Sobre o Projeto
 
-✍️ Sobre
+O **MedData** é um projeto acadêmico de banco de dados relacional voltado para o gerenciamento completo de uma clínica médica. O sistema foi estruturado para garantir a integridade referencial, otimização de consultas e automação de regras de negócio essenciais no setor de saúde, abrangendo desde o cadastro de pacientes até o controle financeiro de pagamentos.
 
-O sistema permite gerenciar pacientes, médicos, especialidades, consultas, exames, receitas, medicamentos e pagamentos.
+---
 
-🛠️ Tecnologias 
+## 🎯 Escopo do Sistema
 
-- PostgreSQL
-- SQL
-- DBeaver
-- GitHub
+O banco de dados gerencia as seguintes entidades e relações principais:
+- **Pessoas e Atores:** Pacientes e Médicos.
+- **Organização:** Especialidades médicas e Departamentos/Consultórios.
+- **Atendimento:** Consultas médicas, Exames laboratoriais/de imagem e Receituários.
+- **Suprimentos:** Catálogo de medicamentos.
+- **Financeiro:** Controle e registro de pagamentos.
 
-📚 Conceitos
+---
 
-Chaves primárias (PK), Chaves estrangeiras (FK), Relacionamentos, Normalização, JOINs, Views, Triggers e Procedures.
+## 🛠️ Tecnologias e Ferramentas
 
-👥 Equipe
+* **SGBD:** PostgreSQL (gerenciamento e execução de scripts DDL/DML/DQL)
+* **Linguagem:** SQL (Structured Query Language)
+* **Ferramenta de Apoio:** DBeaver (modelagem, testes e gerenciamento do banco)
+* **Versionamento:** Git & GitHub
 
-| Nome |
-|----------------------------------------|
-| 1- Pedro Olímpio Arantes Freire Brandão |
-| 2- Gabriel de Oliveira de Assis |
-| 3- Eduardo Almeida |
+---
 
-📂 Estrutura do Repositório
+## 🚀 Status do Desenvolvimento
 
-- `/ddl`: Scripts de criação das tabelas e relacionamentos (`CREATE TABLE`).
-- `/dml`: Scripts de povoamento e carga de dados (`INSERT`).
-- `/dql`: Consultas relacionais (`SELECT` com `INNER`, `LEFT`, `RIGHT JOIN` e `GROUP BY`), um arquivo por consulta.
-- `script_banco.sql`: Script unificado completo (`DROP` → `CREATE` → `INSERT`) para execução sequencial.
+- [x] **DDL (Data Definition Language):** Criação de tabelas, restrições, chaves primárias (PK) e estrangeiras (FK).
+- [x] **DML (Data Manipulation Language):** População do banco com dados fictícios e consistentes para testes.
+- [x] **DQL (Data Query Language):** Consultas avançadas utilizando `JOIN`s, subconsultas e ordenações.
+- [ ] **Visões e Automação:** Implementação de `Views` analíticas, `Triggers` de auditoria/consistência e `Procedures` armazenadas.
+
+---
+
+## 📚 Conceitos Aplicados
+
+* **Modelagem Relacional:** Normalização (até a 3ª Forma Normal - 3NF) para evitar redundâncias.
+* **Integridade Referencial:** Uso rigoroso de Chaves Primárias (PK) e Estrangeiras (FK) com regras de cascata/restrição (`ON DELETE`, `ON UPDATE`).
+* **Consultas Complexas:** Junções múltiplas (`INNER JOIN`, `LEFT JOIN`), agregações (`GROUP BY`, `HAVING`) e filtragem avançada.
+* **Programação em Banco:** Uso de blocos PL/pgSQL para lógica complexa de negócios via **Triggers** e **Stored Procedures**.
+
+---
+
+## 📂 Estrutura do Repositório
+
+*(Exemplo de organização de pastas sugerida)*
+```text
+├── database/
+│   ├── 01_ddl.sql          # Criação do esquema e tabelas
+│   ├── 02_dml.sql          # Inserção de dados iniciais (Seed)
+│   ├── 03_dql.sql          # Consultas e relatórios analíticos
+│   └── 04_views_triggers.sql # Views, Triggers e Procedures
+├── docs/
+│   ├── MER.png             # Modelo Entidade-Relacionamento
+│   └── Dicionario_de_Dados.md
+└── README.md
 
 ---
 
