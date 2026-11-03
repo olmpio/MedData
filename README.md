@@ -89,6 +89,8 @@ A escolha desse domínio possibilita trabalhar diferentes tipos de relacionament
 9. **Receita_Medicamento** — Tabela associativa que relaciona as receitas aos medicamentos prescritos.
 10. **Convênio** — Armazena os convênios médicos aceitos pela clínica.
 11. **Pagamento** — Registra os pagamentos e transações financeiras relacionadas às consultas.
+12. **Tabela_Preco** — Armazena os valores de consultas e exames por convênio e a tabela particular de consultas.
+13. **Pagamento_Exame** — Registra os pagamentos e transações financeiras relacionadas aos exames.
 
 ---
 
@@ -179,6 +181,21 @@ A escolha desse domínio possibilita trabalhar diferentes tipos de relacionament
 * `forma_pagamento`
 * `status`
 
+### Tabela_Preco
+* `id` (PK)
+* `id_convenio` (FK, nulo na tabela particular)
+* `id_especialidade` (FK, valor de consulta)
+* `id_exame` (FK, valor de exame)
+* `valor`
+
+### Pagamento_Exame
+* `id` (PK)
+* `id_consulta_exame` (FK, UNIQUE)
+* `valor`
+* `data_pagamento`
+* `forma_pagamento`
+* `status`
+
 ---
 
 ## Relacionamentos
@@ -191,6 +208,10 @@ A escolha desse domínio possibilita trabalhar diferentes tipos de relacionament
 * **Consulta** `1 ─── 0..1` **Receita**
 * **Receita** `N ─── N` **Medicamento** *(via Receita_Medicamento)*
 * **Consulta** `1 ─── 0..1` **Pagamento**
+* **Consulta_Exame** `1 ─── 0..1` **Pagamento_Exame**
+* **Convênio** `1 ─── N` **Tabela_Preco**
+* **Especialidade** `1 ─── N` **Tabela_Preco**
+* **Exame** `1 ─── N` **Tabela_Preco**
 
 > **Nota:** Todos os relacionamentos e restrições de integridade referencial (*Foreign Keys*) foram devidamente implementados via DDL com tratamento adequado de ações de deleção (`ON DELETE RESTRICT`, `ON DELETE CASCADE` e `ON DELETE SET NULL`).
 
@@ -232,4 +253,31 @@ As consultas ficam localizadas em `/dql`, numeradas de acordo com a ordem da ati
 * Pacientes sem convênio cadastrado aparecem como `Particular` nas consultas agrupadas por convênio.
 * As datas são relativas a `CURRENT_DATE`, acompanhando a carga de dados do script inicial.
 
+---
 
+## 5. Procedures e Functions
+
+| Rotina | Arquivo | Objetivo |
+|---|---|---|
+| `sp_processar_faturamento_consulta` | `procedures/sp_processar_faturamento_consulta.sql` | Quita uma consulta ou um exame, aplicando o valor do convênio ou da tabela particular |
+| `fc_faturamento_mensal_medico` | `functions/fc_faturamento_mensal_medico.sql` | Retorna o valor bruto faturado por um médico em um mês/ano |
+
+```sql
+CALL sp_processar_faturamento_consulta(3, 'Pix');         -- quita a consulta 3
+CALL sp_processar_faturamento_consulta(3, 'Pix', 3);      -- quita o exame 3 da consulta 3
+SELECT fc_faturamento_mensal_medico(3, 10, 2026);         -- médico 3 em 10/2026
+```
+
+### Ordem de execução
+
+1. `ddl/tabela_preco.sql` e `ddl/pagamento_exame.sql`, depois das demais tabelas.
+2. `dml/insert_tabela_preco.sql` e `dml/insert_pagamento_exame.sql`, depois das demais cargas.
+3. `procedures/` e `functions/`.
+
+### Regras de Faturamento
+
+* **Tabela aplicada:** Paciente com convênio ativo paga pela tabela do convênio. Sem convênio, ou com convênio inativo, paga pela tabela particular.
+* **Valor da consulta:** Definido pela especialidade do médico em `tabela_preco`.
+* **Valor do exame:** Definido em `tabela_preco` para convênios e em `exame.valor` para particulares.
+* **Quitação:** Exige consulta `Realizada` ou exame realizado. Um pagamento `Pendente` é atualizado e um pagamento `Pago` não pode ser quitado de novo.
+* **Faturamento mensal do médico:** Soma pagamentos `Pago` e `Pendente` de consultas `Realizada`, pelo mês de `data_consulta`, e de exames, pelo mês de `data_exame`. O exame conta para o médico da consulta que o solicitou.
