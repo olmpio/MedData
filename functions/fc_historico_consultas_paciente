@@ -1,0 +1,17 @@
+CREATE OR REPLACE FUNCTION fc_historico_consultas_paciente(
+    p_id_paciente INT
+)
+RETURNS INT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_total_atendimentos INT;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_total_atendimentos
+    FROM consulta c
+    WHERE c.id_paciente = p_id_paciente
+      AND c.status ILIKE '%realizada%'; 
+    RETURN v_total_atendimentos;
+END;
+$$;
