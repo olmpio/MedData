@@ -1,0 +1,39 @@
+CREATE OR REPLACE PROCEDURE sp_agendar_consulta_medica(
+    p_id_medico INT,
+    p_id_paciente INT,
+    p_id_convenio INT,
+    p_data_hora TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_convenio_existe BOOLEAN;
+    v_conflito_count INT;
+BEGIN
+    SELECT COUNT(*) > 0 INTO v_convenio_existe
+    FROM convenio c
+    WHERE c.id_convenio = p_id_convenio 
+      AND c.ativo = TRUE;
+
+    IF NOT v_convenio_existe THEN
+        RAISE EXCEPTION 'Erro: O convênio informado não existe ou não está ativo.';
+    END IF;
+
+    SELECT COUNT(*) INTO v_conflito_count
+    FROM consulta c
+    WHERE c.id_medico = p_id_medico
+      AND c.status NOT IN ('Cancelada', 'Cancelado')
+      AND c.data_hora BETWEEN p_data_hora - INTERVAL '29 minutes' 
+                          AND p_data_hora + INTERVAL '29 minutes';
+
+    IF v_conflito_count > 0 THEN
+        RAISE EXCEPTION 'Erro de Conflito: O médico já possui consulta agendada neste horário.';
+    END IF;
+
+    INSERT INTO consulta (id_medico, id_paciente, id_convenio, data_hora, status)
+    VALUES (p_id_medico, p_id_paciente, p_id_convenio, p_data_hora, 'Agendada');
+
+    RAISE NOTICE 'Consulta agendada com sucesso para o paciente ID % com o médico ID % em %.', 
+        p_id_paciente, p_id_medico, p_data_hora;
+END;
+$$;
