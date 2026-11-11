@@ -1,0 +1,46 @@
+CREATE OR REPLACE PROCEDURE sp_cancelar_consulta_justificativa(
+    p_id_consulta INT,
+    p_motivo VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_status VARCHAR;
+    v_data_hora TIMESTAMP;
+    v_taxa DECIMAL(10,2) := 0;
+BEGIN
+    -- busca a consulta
+    SELECT status, data_consulta + horario
+    INTO v_status, v_data_hora
+    FROM consulta
+    WHERE id = p_id_consulta;
+
+    IF v_status IS NULL THEN
+        RAISE EXCEPTION 'Consulta nao encontrada';
+    END IF;
+
+    -- so cancela consulta agendada
+    IF v_status <> 'Agendada' THEN
+        RAISE EXCEPTION 'So e possivel cancelar consultas agendadas';
+    END IF;
+
+    -- precisa informar o motivo
+    IF p_motivo IS NULL OR p_motivo = '' THEN
+        RAISE EXCEPTION 'Informe o motivo do cancelamento';
+    END IF;
+
+    -- menos de 24h antes: taxa de retencao
+    IF v_data_hora - NOW() < INTERVAL '24 hours' THEN
+        v_taxa := 50.00;
+    END IF;
+
+    UPDATE consulta
+    SET status = 'Cancelada',
+        motivo_cancelamento = p_motivo,
+        data_cancelamento = NOW(),
+        valor_taxa_retencao = v_taxa
+    WHERE id = p_id_consulta;
+
+    RAISE NOTICE 'Consulta cancelada. Taxa: R$ %', v_taxa;
+END;
+$$;
