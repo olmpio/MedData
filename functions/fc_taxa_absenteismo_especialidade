@@ -1,0 +1,37 @@
+CREATE OR REPLACE FUNCTION fc_taxa_absenteismo_especialidade(
+    p_id_especialidade INT,
+    p_data_inicio DATE,
+    p_data_fim DATE
+)
+RETURNS NUMERIC
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_total INT;
+    v_faltas INT;
+BEGIN
+    -- total de consultas da especialidade no periodo
+    SELECT COUNT(*)
+    INTO v_total
+    FROM consulta c
+    INNER JOIN medico m ON m.id = c.id_medico
+    WHERE m.id_especialidade = p_id_especialidade
+      AND c.data_consulta BETWEEN p_data_inicio AND p_data_fim;
+
+    -- quantas dessas foram canceladas
+    SELECT COUNT(*)
+    INTO v_faltas
+    FROM consulta c
+    INNER JOIN medico m ON m.id = c.id_medico
+    WHERE m.id_especialidade = p_id_especialidade
+      AND c.data_consulta BETWEEN p_data_inicio AND p_data_fim
+      AND c.status = 'Cancelada';
+
+    -- evita divisao por zero
+    IF v_total = 0 THEN
+        RETURN 0;
+    END IF;
+
+    RETURN ROUND(v_faltas * 100.0 / v_total, 2);
+END;
+$$;
