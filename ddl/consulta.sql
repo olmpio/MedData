@@ -6,6 +6,9 @@ CREATE TABLE consulta (
     diagnostico VARCHAR(255),
     observacoes VARCHAR(500),
     status VARCHAR(30) NOT NULL DEFAULT 'Agendada',
+    motivo_cancelamento VARCHAR(255),
+    data_cancelamento TIMESTAMP,
+    valor_taxa_retencao DECIMAL(10,2) DEFAULT 0,
     id_paciente INT NOT NULL,
     id_medico INT NOT NULL,
     CONSTRAINT fk_consulta_paciente
